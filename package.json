@@ -1,0 +1,21 @@
+{
+  "name": "cod-parcel-system",
+  "version": "2.0.0",
+  "private": true,
+  "description": "ระบบจัดการพัสดุ COD คงค้าง — Multi-tenant",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "exceljs": "^4.4.0",
+    "sweetalert2": "^11.14.5",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

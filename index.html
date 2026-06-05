@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>เข้าสู่ระบบ — COD Parcel System</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body style="background:linear-gradient(135deg,#111827 0%,#1f2937 100%);">
+
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo"><i class="fas fa-boxes"></i></div>
+      <h1 class="login-title">ระบบพัสดุ COD</h1>
+      <p class="login-sub" id="loginSub">เลือกที่ทำการไปรษณีย์</p>
+
+      <!-- STEP 1: เลือก ปณ. -->
+      <div class="login-step active" id="step1">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="branchSearch" placeholder="ค้นหา ปณ. หรือรหัสไปรษณีย์..." oninput="filterBranches()">
+        </div>
+        <div id="branchList" class="branch-chips">
+          <div class="center-msg">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+            <p>กำลังโหลด...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: เลือกโหมด -->
+      <div class="login-step" id="step2">
+        <div class="info-row" style="margin-bottom:16px;">
+          <span class="info-key">ที่ทำการ</span>
+          <span class="info-value" id="selectedBranchLabel">-</span>
+        </div>
+        <div class="mode-btns">
+          <button class="mode-btn employee" onclick="chooseMode('employee')">
+            <i class="fas fa-user-tag"></i>
+            <span>โหมดพนักงาน</span>
+            <span style="font-size:11px;font-weight:400;color:var(--gray-400);">ตรวจสอบชิ้นงาน</span>
+          </button>
+          <button class="mode-btn admin" onclick="chooseMode('admin')">
+            <i class="fas fa-user-shield"></i>
+            <span>โหมด Admin</span>
+            <span style="font-size:11px;font-weight:400;color:var(--gray-400);">จัดการระบบ</span>
+          </button>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:12px;justify-content:center;" onclick="backToStep1()">
+          <i class="fas fa-arrow-left"></i> เปลี่ยน ปณ.
+        </button>
+      </div>
+
+      <!-- STEP 3: รหัสผ่าน Admin -->
+      <div class="login-step" id="step3">
+        <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">
+          กรอกรหัสผ่าน Admin สำหรับ <b id="step3BranchLabel"></b>
+        </p>
+        <div class="form-group">
+          <label class="form-label">รหัสผ่าน Admin</label>
+          <input type="password" id="adminPasswordInput" placeholder="รหัสผ่าน Admin"
+            onkeydown="if(event.key==='Enter') submitAdminLogin()">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:16px;justify-content:center;" onclick="submitAdminLogin()">
+          <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+        </button>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;justify-content:center;" onclick="backToStep2()">
+          <i class="fas fa-arrow-left"></i> กลับ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/pages/login.ts"></script>
+</body>
+</html>

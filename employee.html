@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#111827">
+  <title>พัสดุคงค้าง — พนักงาน</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon"><i class="fas fa-box-open"></i></div>
+      <div>
+        <span class="brand-text">พัสดุคงค้าง</span>
+        <span class="brand-sub" id="branchLabel">ระบบนำจ่าย</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="changeBtn" class="btn btn-outline btn-sm hidden" onclick="showUserSelection()"><i class="fas fa-exchange-alt"></i> เปลี่ยนคน</button>
+      <button class="btn btn-outline btn-sm" onclick="promptAdminLogin()"><i class="fas fa-user-shield"></i> Admin</button>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="border-color:#f87171;color:#fecaca;" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </header>
+
+  <main class="main" style="max-width:520px;margin:0 auto;padding:16px 14px;">
+    <!-- PAGE 1: เลือกพนักงาน -->
+    <div id="page-select">
+      <div class="page-label"><i class="fas fa-user" style="color:var(--red-400);"></i> เลือกผู้ดำเนินการ</div>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="opSearch" placeholder="ค้นหาชื่อพนักงาน..." oninput="filterOperators()">
+      </div>
+      <div id="operator-list" class="operator-grid">
+        <div class="center-msg"><i class="fas fa-spinner fa-spin" style="font-size:28px;"></i><p>กำลังโหลด...</p></div>
+      </div>
+    </div>
+    <!-- PAGE 2: รายการพัสดุ -->
+    <div id="page-tasks" class="hidden">
+      <div class="task-header">
+        <div><div class="task-header-label">ผู้ดำเนินการ</div><div class="task-header-user" id="currentUser"></div></div>
+        <div><div class="task-badge"><span id="taskCount">0</span><span class="task-badge-label">รายการ</span></div></div>
+      </div>
+      <div id="parcel-list" class="parcel-list"></div>
+    </div>
+  </main>
+
+  <input type="file" id="cameraInput"  accept="image/*" capture="environment" class="hidden" onchange="handlePhotoSelected(event)">
+  <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handlePhotoSelected(event)">
+
+  <script type="module" src="/src/pages/employee.ts"></script>
+</body>
+</html>
