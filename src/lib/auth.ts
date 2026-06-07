@@ -38,10 +38,8 @@ export function requireSession(role?: 'admin' | 'employee'): Session {
   return s
 }
 
-// Build path relative to the Vite base URL
 function redirectTo(page: string) {
-  const base = (import.meta as unknown as { env: { BASE_URL?: string } }).env?.BASE_URL ?? '/'
-  window.location.href = base + page
+  window.location.href = import.meta.env.BASE_URL + page
 }
 
 export function navigateTo(page: string) {
