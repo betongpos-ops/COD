@@ -126,6 +126,25 @@ export async function fetchAvailableDates(branchId: string): Promise<AvailableDa
   return (data as AvailableDate[]) ?? []
 }
 
+// ── Branch Registration ───────────────────────────────────────────
+export async function registerBranch(opts: {
+  postalCode: string
+  name: string
+  officeHeadName?: string
+  officeHeadTitle?: string
+  switchPassword?: string
+}): Promise<{ success: boolean; message?: string; branch_id?: string }> {
+  const { data, error } = await sb.rpc('register_branch', {
+    p_postal_code:       opts.postalCode,
+    p_name:              opts.name,
+    p_office_head_name:  opts.officeHeadName  ?? null,
+    p_office_head_title: opts.officeHeadTitle ?? null,
+    p_switch_password:   opts.switchPassword  ?? null,
+  })
+  if (error) return { success: false, message: error.message }
+  return data as { success: boolean; message?: string; branch_id?: string }
+}
+
 // ── Branch settings ───────────────────────────────────────────────
 export async function updateBranchSettings(opts: {
   branchId: string

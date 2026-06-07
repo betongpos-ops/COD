@@ -11,6 +11,7 @@ export default defineConfig({
         admin:    resolve(__dirname, 'admin.html'),
         employee: resolve(__dirname, 'employee.html'),
         settings: resolve(__dirname, 'settings.html'),
+        register: resolve(__dirname, 'register.html'),
       },
     },
   },

@@ -5,14 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#111827">
   <title>พัสดุคงค้าง — พนักงาน</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/src/styles/main.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-brand">
-      <div class="brand-icon"><i class="fas fa-box-open"></i></div>
+      <div class="topbar-logo-wrap">
+        <img src="/favicon.png"   class="topbar-logo-icon" alt="ไปรษณีย์ไทย">
+        <img src="/Topbar-1.png"  class="topbar-logo-full" alt="ไปรษณีย์ไทย">
+      </div>
       <div>
         <span class="brand-text">พัสดุคงค้าง</span>
         <span class="brand-sub" id="branchLabel">ระบบนำจ่าย</span>
@@ -21,7 +28,7 @@
     <div class="topbar-actions">
       <button id="changeBtn" class="btn btn-outline btn-sm hidden" onclick="showUserSelection()"><i class="fas fa-exchange-alt"></i> เปลี่ยนคน</button>
       <button class="btn btn-outline btn-sm" onclick="promptAdminLogin()"><i class="fas fa-user-shield"></i> Admin</button>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="border-color:#f87171;color:#fecaca;" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.85);" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </header>
 
@@ -46,6 +53,7 @@
       <div id="parcel-list" class="parcel-list"></div>
     </div>
   </main>
+  <footer class="site-footer">© 2026 | 95110 · IMRON SAMOH<br>imron.samoh@gmail.com</footer>
 
   <input type="file" id="cameraInput"  accept="image/*" capture="environment" class="hidden" onchange="handlePhotoSelected(event)">
   <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handlePhotoSelected(event)">

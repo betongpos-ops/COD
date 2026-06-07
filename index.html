@@ -5,15 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#111827">
   <title>เข้าสู่ระบบ — COD Parcel System</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/src/styles/main.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body style="background:linear-gradient(135deg,#111827 0%,#1f2937 100%);">
 
   <div class="login-page">
     <div class="login-card">
-      <div class="login-logo"><i class="fas fa-boxes"></i></div>
+      <div class="login-logo-wrap">
+        <img src="/Login%20card.png" alt="ไปรษณีย์ไทย" class="login-logo-img">
+      </div>
       <h1 class="login-title">ระบบพัสดุ COD</h1>
       <p class="login-sub" id="loginSub">เลือกที่ทำการไปรษณีย์</p>
 
@@ -22,6 +28,11 @@
         <div class="search-box">
           <i class="fas fa-search"></i>
           <input type="text" id="branchSearch" placeholder="ค้นหา ปณ. หรือรหัสไปรษณีย์..." oninput="filterBranches()">
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+          <a href="/COD/register.html" class="register-shortcut">
+            <i class="fas fa-plus-circle"></i> ลงทะเบียน ปณ. ใหม่
+          </a>
         </div>
         <div id="branchList" class="branch-chips">
           <div class="center-msg">
@@ -73,6 +84,8 @@
       </div>
     </div>
   </div>
+
+  <footer class="site-footer site-footer--dark" style="margin-top:6px;">© 2026 | 95110 · IMRON SAMOH<br>imron.samoh@gmail.com</footer>
 
   <script type="module" src="/src/pages/login.ts"></script>
 </body>

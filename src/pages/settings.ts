@@ -113,7 +113,7 @@ window.doLogout = async function () {
     icon: 'question', title: 'ออกจากระบบ?',
     text: 'Session จะถูกล้าง คุณจะต้อง Login ใหม่',
     showCancelButton: true, confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก',
-    confirmButtonColor: '#dc2626',
+    confirmButtonColor: '#ef3e25',
   })
   if (ok.isConfirmed) { clearSession(); navigateTo('index.html') }
 }

@@ -5,29 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#111827">
   <title>ParcelAdmin — COD</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/src/styles/main.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-brand">
-      <div class="brand-icon"><i class="fas fa-boxes"></i></div>
+      <div class="topbar-logo-wrap">
+        <img src="/favicon.png"   class="topbar-logo-icon" alt="ไปรษณีย์ไทย">
+        <img src="/Topbar-1.png"  class="topbar-logo-full" alt="ไปรษณีย์ไทย">
+      </div>
       <div>
         <span class="brand-text">ParcelAdmin</span>
         <span class="brand-sub" id="branchLabel">ระบบจัดการพัสดุ COD</span>
       </div>
     </div>
-    <div class="topbar-desktop">
-      <button class="btn btn-outline btn-sm" onclick="goEmployee()" style="border-color:var(--blue-400);color:#eff6ff;"><i class="fas fa-user-tag"></i> โหมดพนักงาน</button>
-      <button class="btn btn-outline btn-sm" onclick="triggerUpload('1-4')"><i class="fas fa-upload"></i> 1-4 วัน</button>
-      <button class="btn btn-outline btn-sm" onclick="triggerUpload('5plus')"><i class="fas fa-upload"></i> 5+ วัน</button>
-      <button class="btn btn-outline btn-sm" onclick="generateReport()" style="border-color:#fbbf24;color:#fef3c7;"><i class="fas fa-print"></i> รายงาน</button>
-      <button class="btn btn-outline btn-sm" onclick="generateUrgentReport()" style="border-color:#f87171;color:#fecaca;"><i class="fas fa-exclamation-triangle"></i> เร่งส่งเงิน</button>
-      <button class="btn btn-secondary btn-sm" onclick="exportExcel()"><i class="fas fa-file-export"></i> Export</button>
-      <button class="btn btn-outline btn-sm" onclick="doLogout()" style="border-color:#f87171;color:#fecaca;" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+    <div class="topbar-right">
+      <!-- Mode switch — always visible -->
+      <button class="btn btn-sm topbar-mode-btn" onclick="goEmployee()">
+        <i class="fas fa-user-tag"></i>
+        <span class="topbar-label">โหมดพนักงาน</span>
+      </button>
+      <!-- Management dropdown — desktop only -->
+      <div class="mgmt-wrap" id="mgmtWrap">
+        <button class="btn btn-sm topbar-mgmt-btn" onclick="toggleMgmtMenu()" id="mgmtToggleBtn">
+          <i class="fas fa-th-large"></i>
+          <span class="topbar-label">จัดการ</span>
+          <i class="fas fa-chevron-down mgmt-caret"></i>
+        </button>
+        <div class="mgmt-dropdown" id="mgmtDropdown">
+          <div class="mgmt-section">
+            <div class="mgmt-section-label">อัปโหลดข้อมูล</div>
+            <button class="mgmt-item" onclick="triggerUpload('1-4');closeMgmtMenu()"><span class="mgmt-icon mi-green"><i class="fas fa-upload"></i></span>อัปโหลด 1-4 วัน</button>
+            <button class="mgmt-item" onclick="triggerUpload('5plus');closeMgmtMenu()"><span class="mgmt-icon mi-amber"><i class="fas fa-upload"></i></span>อัปโหลด 5+ วัน</button>
+          </div>
+          <div class="mgmt-divider"></div>
+          <div class="mgmt-section">
+            <div class="mgmt-section-label">รายงาน &amp; ส่งออก</div>
+            <button class="mgmt-item" onclick="generateReport();closeMgmtMenu()"><span class="mgmt-icon mi-amber2"><i class="fas fa-print"></i></span>รายงาน COD</button>
+            <button class="mgmt-item" onclick="generateUrgentReport();closeMgmtMenu()"><span class="mgmt-icon mi-red"><i class="fas fa-exclamation-triangle"></i></span>รายงานเร่งส่งเงิน</button>
+            <button class="mgmt-item" onclick="generateLineText();closeMgmtMenu()"><span class="mgmt-icon mi-line"><i class="fab fa-line"></i></span>คัดลอกส่งไลน์</button>
+            <button class="mgmt-item" onclick="exportExcel();closeMgmtMenu()"><span class="mgmt-icon mi-blue"><i class="fas fa-file-export"></i></span>Export Excel</button>
+          </div>
+          <div class="mgmt-divider"></div>
+          <div class="mgmt-section">
+            <div class="mgmt-section-label">ระบบ</div>
+            <button class="mgmt-item" onclick="deleteAllToday();closeMgmtMenu()"><span class="mgmt-icon mi-red2"><i class="fas fa-trash-alt"></i></span>ล้างข้อมูลวันนี้</button>
+            <button class="mgmt-item" onclick="goSettings();closeMgmtMenu()"><span class="mgmt-icon mi-gray"><i class="fas fa-cog"></i></span>ตั้งค่าระบบ</button>
+            <button class="mgmt-item" onclick="location.href='/COD/register.html'"><span class="mgmt-icon mi-green2"><i class="fas fa-plus-circle"></i></span>ลงทะเบียนสาขาใหม่</button>
+            <button class="mgmt-item danger" onclick="doLogout();closeMgmtMenu()"><span class="mgmt-icon mi-danger"><i class="fas fa-sign-out-alt"></i></span>ออกจากระบบ</button>
+          </div>
+        </div>
+      </div>
+      <!-- Hamburger — mobile only -->
+      <button class="btn-hamburger" onclick="openMobileMenu()"><i class="fas fa-bars"></i></button>
     </div>
-    <button class="btn-hamburger" onclick="openMobileMenu()"><i class="fas fa-bars"></i></button>
   </header>
 
   <main class="main">
@@ -45,26 +82,26 @@
 
     <div class="date-bar" id="dateBar"></div>
 
-    <div class="stats-bar">
-      <div class="stat-card" onclick="openStatsModal('total')">
-        <i class="fas fa-chevron-down stat-tap-hint"></i>
-        <div class="stat-label"><i class="fas fa-boxes" style="margin-right:3px;opacity:.7;font-size:10px;"></i>ทั้งหมด</div>
-        <div class="stat-value" id="stat-total">-</div>
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-navy" onclick="openStatsModal('total')">
+        <div class="kpi-icon-wrap"><i class="fas fa-layer-group"></i></div>
+        <div class="kpi-num" id="stat-total">-</div>
+        <div class="kpi-lbl">รายการทั้งหมด</div>
       </div>
-      <div class="stat-card danger" onclick="openStatsModal('5plus')">
-        <i class="fas fa-chevron-down stat-tap-hint"></i>
-        <div class="stat-label"><i class="fas fa-fire" style="margin-right:3px;opacity:.7;font-size:10px;"></i>5+ วัน</div>
-        <div class="stat-value" id="stat-5plus">-</div>
+      <div class="kpi-card kpi-red" onclick="openStatsModal('5plus')">
+        <div class="kpi-icon-wrap"><i class="fas fa-fire"></i></div>
+        <div class="kpi-num" id="stat-5plus">-</div>
+        <div class="kpi-lbl">COD 5+ วัน</div>
       </div>
-      <div class="stat-card success" onclick="openStatsModal('photo')">
-        <i class="fas fa-chevron-down stat-tap-hint"></i>
-        <div class="stat-label"><i class="fas fa-image" style="margin-right:3px;opacity:.7;font-size:10px;"></i>มีรูปแล้ว</div>
-        <div class="stat-value" id="stat-img">-</div>
+      <div class="kpi-card kpi-green" onclick="openStatsModal('photo')">
+        <div class="kpi-icon-wrap"><i class="fas fa-image"></i></div>
+        <div class="kpi-num" id="stat-img">-</div>
+        <div class="kpi-lbl">ถ่ายรูปแล้ว</div>
       </div>
-      <div class="stat-card warning" onclick="openStatsModal('nophoto')">
-        <i class="fas fa-chevron-down stat-tap-hint"></i>
-        <div class="stat-label"><i class="fas fa-camera" style="margin-right:3px;opacity:.7;font-size:10px;"></i>ไม่มีรูป</div>
-        <div class="stat-value" id="stat-nophoto">-</div>
+      <div class="kpi-card kpi-amber" onclick="openStatsModal('nophoto')">
+        <div class="kpi-icon-wrap"><i class="fas fa-camera"></i></div>
+        <div class="kpi-num" id="stat-nophoto">-</div>
+        <div class="kpi-lbl">ยังไม่ถ่ายรูป</div>
       </div>
     </div>
 
@@ -126,24 +163,30 @@
       <div id="groupBody" class="group-list"></div>
     </div>
   </main>
+  <footer class="site-footer">© 2026 | 95110 · IMRON SAMOH<br>imron.samoh@gmail.com</footer>
 
   <!-- MOBILE MENU -->
   <div id="mobileMenuOverlay" class="mobile-menu-overlay" onclick="if(event.target===this)closeMobileMenu()">
     <div class="mobile-menu">
       <div class="mm-handle"></div>
-      <div class="mm-title">เมนูจัดการ</div>
-      <button class="mm-item" onclick="goEmployee();closeMobileMenu()"><div class="mm-icon" style="background:var(--blue-50);color:var(--blue-500);"><i class="fas fa-user-tag"></i></div><div><span>โหมดพนักงาน</span><span class="mm-sub">สลับไปหน้าพนักงาน</span></div></button>
-      <div class="mm-divider"></div>
+      <div class="mm-title">จัดการระบบ</div>
+
+      <div class="mm-section-label">อัปโหลดข้อมูล</div>
       <button class="mm-item" onclick="triggerUpload('1-4');closeMobileMenu()"><div class="mm-icon" style="background:var(--green-50);color:var(--green-600);"><i class="fas fa-upload"></i></div><div><span>อัปโหลด 1-4 วัน</span><span class="mm-sub">นำเข้าไฟล์ Excel จาก QMS</span></div></button>
       <button class="mm-item" onclick="triggerUpload('5plus');closeMobileMenu()"><div class="mm-icon" style="background:var(--amber-50);color:var(--amber-600);"><i class="fas fa-upload"></i></div><div><span>อัปโหลด 5+ วัน</span><span class="mm-sub">นำเข้าไฟล์ Excel จาก QMS</span></div></button>
-      <button class="mm-item" onclick="exportExcel();closeMobileMenu()"><div class="mm-icon" style="background:var(--blue-50);color:var(--blue-600);"><i class="fas fa-file-export"></i></div><div><span>Export Excel</span><span class="mm-sub">ส่งออกข้อมูลพร้อมรูป</span></div></button>
+
+      <div class="mm-divider"></div>
+      <div class="mm-section-label">รายงาน &amp; ส่งออก</div>
       <button class="mm-item" onclick="generateReport();closeMobileMenu()"><div class="mm-icon" style="background:var(--amber-50);color:var(--amber-600);"><i class="fas fa-print"></i></div><div><span>รายงาน COD</span><span class="mm-sub">พิมพ์ A4 / PDF</span></div></button>
       <button class="mm-item" onclick="generateUrgentReport();closeMobileMenu()"><div class="mm-icon" style="background:var(--red-50);color:var(--red-500);"><i class="fas fa-exclamation-triangle"></i></div><div><span>รายงานเร่งส่งเงิน</span><span class="mm-sub">ไม่มีชิ้นงาน / New CA POS</span></div></button>
+      <button class="mm-item" onclick="generateLineText();closeMobileMenu()"><div class="mm-icon" style="background:#e8f9e8;color:#00b900;"><i class="fab fa-line"></i></div><div><span>คัดลอกส่งไลน์</span><span class="mm-sub">สรุปรายการยังไม่ถ่ายรูป</span></div></button>
+      <button class="mm-item" onclick="exportExcel();closeMobileMenu()"><div class="mm-icon" style="background:var(--blue-50);color:var(--blue-600);"><i class="fas fa-file-export"></i></div><div><span>Export Excel</span><span class="mm-sub">ส่งออกข้อมูลพร้อมรูป</span></div></button>
+
       <div class="mm-divider"></div>
-      <button class="mm-item" onclick="generateLineText();closeMobileMenu()"><div class="mm-icon" style="background:var(--green-100);color:var(--green-700);"><i class="fab fa-line"></i></div><div><span>คัดลอกส่งไลน์</span><span class="mm-sub">สรุปรายการยังไม่ถ่ายรูป</span></div></button>
-      <button class="mm-item" onclick="goSettings();closeMobileMenu()"><div class="mm-icon" style="background:var(--gray-100);color:var(--gray-600);"><i class="fas fa-cog"></i></div><div><span>ตั้งค่าระบบ</span><span class="mm-sub">ข้อมูล ปณ. และรหัสผ่าน</span></div></button>
+      <div class="mm-section-label">ระบบ</div>
       <button class="mm-item" onclick="deleteAllToday();closeMobileMenu()"><div class="mm-icon" style="background:var(--red-50);color:var(--red-600);"><i class="fas fa-trash-alt"></i></div><div><span style="color:var(--red-600);">ล้างข้อมูลวันนี้</span><span class="mm-sub">ไม่สามารถกู้คืนได้</span></div></button>
-      <div class="mm-divider"></div>
+      <button class="mm-item" onclick="goSettings();closeMobileMenu()"><div class="mm-icon" style="background:var(--gray-100);color:var(--gray-600);"><i class="fas fa-cog"></i></div><div><span>ตั้งค่าระบบ</span><span class="mm-sub">ข้อมูล ปณ. และรหัสผ่าน</span></div></button>
+      <button class="mm-item" onclick="location.href='/COD/register.html'"><div class="mm-icon" style="background:var(--green-50);color:var(--green-600);"><i class="fas fa-plus-circle"></i></div><div><span>ลงทะเบียนสาขาใหม่</span><span class="mm-sub">เพิ่ม ปณ. เข้าระบบ</span></div></button>
       <button class="mm-item" onclick="doLogout();closeMobileMenu()"><div class="mm-icon" style="background:var(--red-50);color:var(--red-600);"><i class="fas fa-sign-out-alt"></i></div><div><span style="color:var(--red-600);">ออกจากระบบ</span><span class="mm-sub">กลับหน้า Login</span></div></button>
     </div>
   </div>
@@ -219,6 +262,22 @@
     </div>
   </div>
 
+  <script>
+    function toggleMgmtMenu() {
+      const btn  = document.getElementById('mgmtToggleBtn');
+      const menu = document.getElementById('mgmtDropdown');
+      const open = menu.classList.contains('open');
+      if (open) { closeMgmtMenu(); } else { menu.classList.add('open'); btn.classList.add('open'); }
+    }
+    function closeMgmtMenu() {
+      document.getElementById('mgmtDropdown')?.classList.remove('open');
+      document.getElementById('mgmtToggleBtn')?.classList.remove('open');
+    }
+    document.addEventListener('click', function(e) {
+      const wrap = document.getElementById('mgmtWrap');
+      if (wrap && !wrap.contains(e.target)) closeMgmtMenu();
+    });
+  </script>
   <script type="module" src="/src/pages/admin.ts"></script>
 </body>
 </html>

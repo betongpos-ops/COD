@@ -165,7 +165,7 @@ window.triggerCamera = function (trackingNo: string, photoAllowed: boolean) {
     Swal.fire({
       icon: 'warning', title: 'ยังไม่ได้รับอนุญาต',
       html: 'โปรดนำชิ้นงานที่มีอยู่จริง ไปแสดงให้ผู้ควบคุมฯ<br><br>หรือ หัวหน้า ปณ. ตรวจนับก่อน จึงจะถ่ายภาพได้',
-      confirmButtonText: 'รับทราบ', confirmButtonColor: '#dc2626',
+      confirmButtonText: 'รับทราบ', confirmButtonColor: '#ef3e25',
     })
     return
   }
@@ -222,7 +222,7 @@ window.promptAdminLogin = function () {
     html: `<div style="text-align:left;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;">รหัสผ่าน Admin</div><input id="swal-pw" type="password" class="swal2-input" placeholder="รหัสผ่าน Admin" style="margin:0;">`,
     focusConfirm: false, showCancelButton: true,
     confirmButtonText: 'เข้าสู่ระบบ', cancelButtonText: 'ยกเลิก',
-    confirmButtonColor: '#dc2626',
+    confirmButtonColor: '#ef3e25',
     preConfirm: async () => {
       const pw = (document.getElementById('swal-pw') as HTMLInputElement).value
       if (!pw) { Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false }
