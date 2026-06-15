@@ -1,5 +1,6 @@
 import { sb } from '../lib/supabase'
 import { login, saveSession, getSession, navigateTo } from '../lib/auth'
+import { initPasswordToggles } from '../lib/pwtoggle'
 import type { Branch, Session } from '../types'
 import Swal from 'sweetalert2'
 
@@ -124,3 +125,4 @@ declare global {
 
 // ── Init ──────────────────────────────────────────────────────────
 loadBranches()
+initPasswordToggles()

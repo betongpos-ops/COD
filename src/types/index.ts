@@ -5,6 +5,7 @@ export interface Branch {
   name: string
   office_head_name: string | null
   office_head_title: string | null
+  controller_name: string | null
   is_active: boolean
   created_at: string
 }
@@ -51,6 +52,7 @@ export interface AuthResult {
   postal_code?: string
   office_head_name?: string | null
   office_head_title?: string | null
+  controller_name?: string | null
 }
 
 export interface Session {
@@ -60,6 +62,7 @@ export interface Session {
   role: 'admin' | 'employee'
   office_head_name: string | null
   office_head_title: string | null
+  controller_name: string | null
 }
 
 // ── Stats ─────────────────────────────────────────────────────────

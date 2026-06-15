@@ -4,6 +4,9 @@ import { fetchParcels, uploadImage, updateParcel } from '../lib/supabase'
 import { compressImage } from '../lib/compress'
 import { todayISO, platformBadgeHtml, escJs } from '../lib/utils'
 import { fetchOperatorsStats } from '../lib/supabase'
+import { buildHandover210Doc, openHandover210, getLogoDataUrl } from '../lib/handover210'
+import { initPasswordToggles } from '../lib/pwtoggle'
+import { showAnnouncement } from '../lib/announcement'
 import type { Parcel, OperatorStats, Session } from '../types'
 import { getParcelStatus } from '../types'
 
@@ -14,6 +17,8 @@ document.getElementById('branchLabel')!.textContent = `${session.postal_code} �
 const currentDate = todayISO()
 let allOperators: OperatorStats[] = []
 let currentTracking = ''
+let currentOperator = ''
+let currentParcels: Parcel[] = []
 
 // ── Load operators ────────────────────────────────────────────────
 async function loadOperators() {
@@ -95,6 +100,8 @@ window.loadTasks = async function (operatorId: string) {
     const all = await fetchParcels(session.branch_id, currentDate)
     const parcels = all.filter(p => p.operator_id === operatorId)
       .sort((a, b) => b.holding_days_dest - a.holding_days_dest)
+    currentOperator = operatorId
+    currentParcels = parcels
     document.getElementById('taskCount')!.textContent = String(parcels.length)
     listEl.innerHTML = parcels.length
       ? parcels.map(p => renderCard(p)).join('')
@@ -223,6 +230,7 @@ window.promptAdminLogin = function () {
     focusConfirm: false, showCancelButton: true,
     confirmButtonText: 'เข้าสู่ระบบ', cancelButtonText: 'ยกเลิก',
     confirmButtonColor: '#ef3e25',
+    didOpen: () => { const p = Swal.getPopup(); if (p) initPasswordToggles(p) },
     preConfirm: async () => {
       const pw = (document.getElementById('swal-pw') as HTMLInputElement).value
       if (!pw) { Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false }
@@ -232,6 +240,26 @@ window.promptAdminLogin = function () {
       return true
     },
   }).then(r => { if (r.isConfirmed) navigateTo('admin.html') })
+}
+
+// ── พิมพ์บัญชีส่งมอบ ป.210 ของตัวเอง ──────────────────────────────
+window.printMyHandover210 = async function () {
+  if (!currentOperator || !currentParcels.length) {
+    Swal.fire('ไม่มีรายการ', 'ยังไม่มีพัสดุให้ส่งมอบ', 'info'); return
+  }
+  Swal.fire({ title: 'กำลังเตรียมเอกสาร...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
+  const logoSrc = await getLogoDataUrl()
+  Swal.close()
+  const html = buildHandover210Doc(
+    [{ operator: currentOperator, parcels: currentParcels }],
+    {
+      branchName:     session.branch_name,
+      controllerName: session.controller_name ?? '',
+      workDate:       currentDate,
+      logoSrc,
+    }
+  )
+  if (!openHandover210(html)) Swal.fire('ถูกบล็อก', 'กรุณาอนุญาต Pop-up', 'warning')
 }
 
 window.doLogout = function () {
@@ -248,9 +276,11 @@ declare global {
     handlePhotoSelected: (e: Event) => void
     showUserSelection: () => void
     promptAdminLogin: () => void
+    printMyHandover210: () => void
     doLogout: () => void
   }
 }
 
 // ── Init ──────────────────────────────────────────────────────────
 loadOperators()
+showAnnouncement('employee')

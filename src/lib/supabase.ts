@@ -152,6 +152,7 @@ export async function updateBranchSettings(opts: {
   officeHeadName?: string
   officeHeadTitle?: string
   name?: string
+  controllerName?: string
 }) {
   const { data, error } = await sb.rpc('update_branch_settings', {
     p_branch_id:         opts.branchId,
@@ -159,6 +160,7 @@ export async function updateBranchSettings(opts: {
     p_office_head_name:  opts.officeHeadName   ?? null,
     p_office_head_title: opts.officeHeadTitle  ?? null,
     p_name:              opts.name             ?? null,
+    p_controller_name:   opts.controllerName   ?? null,
   })
   if (error) throw error
   return data

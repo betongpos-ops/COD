@@ -1,9 +1,12 @@
 import Swal from 'sweetalert2'
 import { registerBranch } from '../lib/supabase'
 import { navigateTo } from '../lib/auth'
+import { initPasswordToggles } from '../lib/pwtoggle'
 
 // ── Navigation ────────────────────────────────────────────────────
 window.goLogin = () => navigateTo('index.html')
+
+initPasswordToggles()
 
 // ── Submit ────────────────────────────────────────────────────────
 window.submitRegister = async function () {

@@ -238,6 +238,19 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(239,62,37,.07);
 }
 .search-wrap input { padding-left: 34px; }
+
+/* ── ปุ่มดู/ซ่อนรหัสผ่าน ── */
+.pw-field { position: relative; display: block; width: 100%; }
+.pw-field > input { padding-right: 40px; }
+.pw-eye {
+  position: absolute; top: 0; right: 0; height: 100%;
+  width: 38px; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-400); font-size: 15px; padding: 0;
+  transition: color .15s;
+}
+.pw-eye:hover { color: var(--gray-600); }
+
 select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%236b7280' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 10px center;
@@ -888,7 +901,7 @@ tbody td { padding: 10px 12px; font-size: 14px; vertical-align: middle; }
   border: 1px solid var(--gray-200);
   border-radius: var(--r-lg);
   padding: 16px 12px 14px;
-  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
   cursor: pointer; transition: all .18s; user-select: none;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
@@ -928,8 +941,24 @@ tbody td { padding: 10px 12px; font-size: 14px; vertical-align: middle; }
 .kpi-green .kpi-num       { color: var(--green-700); }
 .kpi-green:hover { box-shadow: 0 6px 18px rgba(22,163,74,.15); }
 
-/* No photo — amber: action needed */
+/* No photo / pending — amber: action needed */
 .kpi-amber { border-top: 3px solid var(--amber-600); }
 .kpi-amber .kpi-icon-wrap { background: var(--amber-50); color: var(--amber-600); }
 .kpi-amber .kpi-num       { color: var(--amber-700); }
 .kpi-amber:hover { box-shadow: 0 6px 18px rgba(217,119,6,.15); }
+
+/* Card 1 (multi) — navy: total + 1-4 + 5+ in one card */
+.kpi-multi { padding: 12px; gap: 9px; align-items: stretch; justify-content: flex-start; }
+.kpi-multi-head { display: flex; align-items: center; gap: 10px; cursor: pointer; border-radius: 8px; }
+.kpi-multi-head .kpi-icon-wrap { width: 38px; height: 38px; font-size: 15px; }
+.kpi-multi-total { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.kpi-multi-total .kpi-num { font-size: 26px; }
+.kpi-multi-split { display: flex; gap: 6px; }
+.kpi-seg {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  background: rgba(255,255,255,.14); border: none; border-radius: 8px; padding: 7px 4px;
+  cursor: pointer; font-family: inherit; transition: background .15s;
+}
+.kpi-seg:hover { background: rgba(255,255,255,.28); }
+.kpi-seg-num { font-family: var(--mono); font-size: 18px; font-weight: 700; color: #fff; line-height: 1; }
+.kpi-seg-lbl { font-size: 10px; color: rgba(255,255,255,.8); white-space: nowrap; }

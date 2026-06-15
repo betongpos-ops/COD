@@ -49,6 +49,7 @@
             <div class="mgmt-section-label">รายงาน &amp; ส่งออก</div>
             <button class="mgmt-item" onclick="generateReport();closeMgmtMenu()"><span class="mgmt-icon mi-amber2"><i class="fas fa-print"></i></span>รายงาน COD</button>
             <button class="mgmt-item" onclick="generateUrgentReport();closeMgmtMenu()"><span class="mgmt-icon mi-red"><i class="fas fa-exclamation-triangle"></i></span>รายงานเร่งส่งเงิน</button>
+            <button class="mgmt-item" onclick="generateHandover210();closeMgmtMenu()"><span class="mgmt-icon mi-blue"><i class="fas fa-file-signature"></i></span>บัญชีส่งมอบ ป.210</button>
             <button class="mgmt-item" onclick="generateLineText();closeMgmtMenu()"><span class="mgmt-icon mi-line"><i class="fab fa-line"></i></span>คัดลอกส่งไลน์</button>
             <button class="mgmt-item" onclick="exportExcel();closeMgmtMenu()"><span class="mgmt-icon mi-blue"><i class="fas fa-file-export"></i></span>Export Excel</button>
           </div>
@@ -83,25 +84,43 @@
     <div class="date-bar" id="dateBar"></div>
 
     <div class="kpi-grid">
-      <div class="kpi-card kpi-navy" onclick="openStatsModal('total')">
-        <div class="kpi-icon-wrap"><i class="fas fa-layer-group"></i></div>
-        <div class="kpi-num" id="stat-total">-</div>
-        <div class="kpi-lbl">รายการทั้งหมด</div>
+      <!-- Card 1: รวมทั้งหมด + 1-4 วัน + 5+ วัน -->
+      <div class="kpi-card kpi-navy kpi-multi">
+        <div class="kpi-multi-head" onclick="openStatsModal('total')" role="button" tabindex="0">
+          <div class="kpi-icon-wrap"><i class="fas fa-layer-group"></i></div>
+          <div class="kpi-multi-total">
+            <div class="kpi-num" id="stat-total">-</div>
+            <div class="kpi-lbl">รายการทั้งหมด</div>
+          </div>
+        </div>
+        <div class="kpi-multi-split">
+          <button type="button" class="kpi-seg" onclick="openStatsModal('14')">
+            <span class="kpi-seg-num" id="stat-14">-</span>
+            <span class="kpi-seg-lbl">1-4 วัน</span>
+          </button>
+          <button type="button" class="kpi-seg" onclick="openStatsModal('5plus')">
+            <span class="kpi-seg-num" id="stat-5plus">-</span>
+            <span class="kpi-seg-lbl">5+ วัน</span>
+          </button>
+        </div>
       </div>
-      <div class="kpi-card kpi-red" onclick="openStatsModal('5plus')">
-        <div class="kpi-icon-wrap"><i class="fas fa-fire"></i></div>
-        <div class="kpi-num" id="stat-5plus">-</div>
-        <div class="kpi-lbl">COD 5+ วัน</div>
-      </div>
+      <!-- Card 2: ถ่ายรูปแล้ว -->
       <div class="kpi-card kpi-green" onclick="openStatsModal('photo')">
         <div class="kpi-icon-wrap"><i class="fas fa-image"></i></div>
         <div class="kpi-num" id="stat-img">-</div>
         <div class="kpi-lbl">ถ่ายรูปแล้ว</div>
       </div>
+      <!-- Card 3: รอตรวจสอบ / ยังไม่ถ่ายรูป -->
       <div class="kpi-card kpi-amber" onclick="openStatsModal('nophoto')">
-        <div class="kpi-icon-wrap"><i class="fas fa-camera"></i></div>
+        <div class="kpi-icon-wrap"><i class="fas fa-hourglass-half"></i></div>
         <div class="kpi-num" id="stat-nophoto">-</div>
-        <div class="kpi-lbl">ยังไม่ถ่ายรูป</div>
+        <div class="kpi-lbl">รอตรวจสอบ</div>
+      </div>
+      <!-- Card 4: ตรวจแล้ว ไม่มีชิ้นงาน -->
+      <div class="kpi-card kpi-red" onclick="openStatsModal('noitem')">
+        <div class="kpi-icon-wrap"><i class="fas fa-ban"></i></div>
+        <div class="kpi-num" id="stat-noitem">-</div>
+        <div class="kpi-lbl">ไม่มีชิ้นงาน</div>
       </div>
     </div>
 
@@ -179,6 +198,7 @@
       <div class="mm-section-label">รายงาน &amp; ส่งออก</div>
       <button class="mm-item" onclick="generateReport();closeMobileMenu()"><div class="mm-icon" style="background:var(--amber-50);color:var(--amber-600);"><i class="fas fa-print"></i></div><div><span>รายงาน COD</span><span class="mm-sub">พิมพ์ A4 / PDF</span></div></button>
       <button class="mm-item" onclick="generateUrgentReport();closeMobileMenu()"><div class="mm-icon" style="background:var(--red-50);color:var(--red-500);"><i class="fas fa-exclamation-triangle"></i></div><div><span>รายงานเร่งส่งเงิน</span><span class="mm-sub">ไม่มีชิ้นงาน / New CA POS</span></div></button>
+      <button class="mm-item" onclick="generateHandover210();closeMobileMenu()"><div class="mm-icon" style="background:var(--blue-50);color:var(--blue-600);"><i class="fas fa-file-signature"></i></div><div><span>บัญชีส่งมอบ ป.210</span><span class="mm-sub">พิมพ์ทุกคน 1 แผ่น/คน</span></div></button>
       <button class="mm-item" onclick="generateLineText();closeMobileMenu()"><div class="mm-icon" style="background:#e8f9e8;color:#00b900;"><i class="fab fa-line"></i></div><div><span>คัดลอกส่งไลน์</span><span class="mm-sub">สรุปรายการยังไม่ถ่ายรูป</span></div></button>
       <button class="mm-item" onclick="exportExcel();closeMobileMenu()"><div class="mm-icon" style="background:var(--blue-50);color:var(--blue-600);"><i class="fas fa-file-export"></i></div><div><span>Export Excel</span><span class="mm-sub">ส่งออกข้อมูลพร้อมรูป</span></div></button>
 

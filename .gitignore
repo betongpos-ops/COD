@@ -2,3 +2,17 @@ node_modules/
 dist/
 .env
 *.local
+
+# Claude Code settings
+.claude/
+
+# impeccable skill tooling (github harness copy)
+.github/skills/
+
+# Old Google Apps Script files (ระบบเดิม)
+.clasp.json
+appsscript.json
+รหัส.js
+Employee.html
+Index.html
+supabase/01_schema.sql

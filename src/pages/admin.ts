@@ -13,6 +13,8 @@ import {
   normalizeTracking, escJs
 } from '../lib/utils'
 import { fetchAvailableDates } from '../lib/supabase'
+import { buildHandover210Doc, openHandover210, type OperatorGroup } from '../lib/handover210'
+import { showAnnouncement } from '../lib/announcement'
 import type { Parcel, Session } from '../types'
 import { getParcelStatus } from '../types'
 
@@ -39,6 +41,7 @@ let modalMode:     'create' | 'update' = 'create'
 async function init() {
   await loadDateBar()
   await loadData()
+  showAnnouncement('admin')
 }
 init()
 
@@ -88,22 +91,28 @@ async function loadData() {
 
 // ── Stats ─────────────────────────────────────────────────────────
 function updateStats() {
-  const total   = allData.length
-  const hot5    = allData.filter(d => d.holding_days_dest >= 5).length
+  const total    = allData.length
+  const d14      = allData.filter(d => d.holding_days_dest < 5).length
+  const d5plus   = allData.filter(d => d.holding_days_dest >= 5).length
   const hasPhoto = allData.filter(d => d.image_url && d.image_url !== 'NO_ITEM').length
   const noPhoto  = allData.filter(d => !d.image_url).length
-  document.getElementById('stat-total')!.textContent  = String(total)
-  document.getElementById('stat-5plus')!.textContent  = String(hot5)
-  document.getElementById('stat-img')!.textContent    = String(hasPhoto)
+  const noItem   = allData.filter(d => d.image_url === 'NO_ITEM').length
+  document.getElementById('stat-total')!.textContent   = String(total)
+  document.getElementById('stat-14')!.textContent      = String(d14)
+  document.getElementById('stat-5plus')!.textContent   = String(d5plus)
+  document.getElementById('stat-img')!.textContent     = String(hasPhoto)
   document.getElementById('stat-nophoto')!.textContent = String(noPhoto)
+  document.getElementById('stat-noitem')!.textContent  = String(noItem)
 }
 
 // ── Stats drill-down modal ─────────────────────────────────────────
 const STAT_CFG = {
-  total:   { title: 'รายการทั้งหมด',    sub: 'พัสดุทุกชิ้น',                  icon: 'fa-boxes',  bg: 'var(--gray-100)', cl: 'var(--gray-700)', fn: (_: Parcel) => true },
-  '5plus': { title: 'ค้าง 5+ วัน',      sub: 'ค้างตั้งแต่ 5 วันขึ้นไป',       icon: 'fa-fire',   bg: 'var(--red-50)',   cl: 'var(--red-600)',  fn: (d: Parcel) => d.holding_days_dest >= 5 },
-  photo:   { title: 'มีรูปภาพแล้ว',     sub: 'ถ่ายรูปหมายเหตุแล้ว',           icon: 'fa-image',  bg: 'var(--green-50)', cl: 'var(--green-700)',fn: (d: Parcel) => !!(d.image_url && d.image_url !== 'NO_ITEM') },
-  nophoto: { title: 'ยังไม่มีรูปภาพ',  sub: 'ยังไม่ได้ถ่ายรูป',              icon: 'fa-camera', bg: 'var(--amber-50)', cl: 'var(--amber-700)',fn: (d: Parcel) => !d.image_url },
+  total:   { title: 'รายการทั้งหมด',    sub: 'พัสดุทุกชิ้น',                  icon: 'fa-boxes',          bg: 'var(--gray-100)', cl: 'var(--gray-700)', fn: (_: Parcel) => true },
+  '14':    { title: 'COD 1-4 วัน',      sub: 'ค้าง 1-4 วัน',                  icon: 'fa-box',            bg: 'var(--blue-50)',  cl: 'var(--blue-600)', fn: (d: Parcel) => d.holding_days_dest < 5 },
+  '5plus': { title: 'COD 5+ วัน',       sub: 'ค้างตั้งแต่ 5 วันขึ้นไป',       icon: 'fa-fire',           bg: 'var(--red-50)',   cl: 'var(--red-600)',  fn: (d: Parcel) => d.holding_days_dest >= 5 },
+  photo:   { title: 'ถ่ายรูปแล้ว',      sub: 'ถ่ายรูปหมายเหตุแล้ว',           icon: 'fa-image',          bg: 'var(--green-50)', cl: 'var(--green-700)',fn: (d: Parcel) => !!(d.image_url && d.image_url !== 'NO_ITEM') },
+  nophoto: { title: 'ยังไม่ถ่ายรูป',        sub: 'ยังไม่ถ่ายรูป / ยังไม่ตรวจสอบ', icon: 'fa-hourglass-half', bg: 'var(--amber-50)', cl: 'var(--amber-700)',fn: (d: Parcel) => !d.image_url },
+  noitem:  { title: 'ไม่มีชิ้นงาน',     sub: 'ตรวจแล้ว ไม่มีชิ้นงาน → ส่งเงิน', icon: 'fa-ban',          bg: 'var(--red-50)',   cl: 'var(--red-600)',  fn: (d: Parcel) => d.image_url === 'NO_ITEM' },
 } as const
 
 window.openStatsModal = function (type: keyof typeof STAT_CFG) {
@@ -829,6 +838,34 @@ window.generateUrgentReport = async function () {
   if (!win) Swal.fire('ถูกบล็อก', 'กรุณาอนุญาต Pop-up', 'warning')
 }
 
+// ── บัญชีส่งมอบภายใน (ป.210) — พิมพ์ทุกคน 1 แผ่น/คน ───────────────
+window.generateHandover210 = async function () {
+  if (!allData.length) { Swal.fire('ไม่มีข้อมูล', 'ยังไม่มีพัสดุในวันที่เลือก', 'info'); return }
+  if (!session.controller_name) {
+    const go = await Swal.fire({
+      icon: 'warning', title: 'ยังไม่ได้ตั้งชื่อผู้ควบคุมฯ',
+      html: 'ช่อง "ถึง" ในบัญชีจะว่าง<br>ต้องการไปตั้งค่าชื่อผู้ควบคุมฯ ก่อนไหม?',
+      showCancelButton: true, confirmButtonText: 'ไปตั้งค่า', cancelButtonText: 'พิมพ์ต่อไป',
+      confirmButtonColor: '#002169',
+    })
+    if (go.isConfirmed) { navigateTo('settings.html'); return }
+  }
+  const groups: Record<string, Parcel[]> = {}
+  allData.forEach(d => { const op = d.operator_id ?? 'ไม่ระบุตัวตน'; (groups[op] ??= []).push(d) })
+  const ordered: OperatorGroup[] = Object.keys(groups)
+    .sort((a, b) => a.localeCompare(b, 'th'))
+    .map(op => ({ operator: op, parcels: groups[op] }))
+
+  const logoSrc = await getLogoDataUrl()
+  const html = buildHandover210Doc(ordered, {
+    branchName:     session.branch_name,
+    controllerName: session.controller_name ?? '',
+    workDate:       currentDate,
+    logoSrc,
+  })
+  if (!openHandover210(html)) Swal.fire('ถูกบล็อก', 'กรุณาอนุญาต Pop-up', 'warning')
+}
+
 // ── LINE text ─────────────────────────────────────────────────────
 window.generateLineText = function () {
   if (!allData.length) { Swal.fire('ไม่พบข้อมูล', '', 'info'); return }
@@ -908,6 +945,7 @@ declare global {
     exportExcel: () => void
     generateReport: () => void
     generateUrgentReport: () => void
+    generateHandover210: () => void
     generateLineText: () => void
     openMobileMenu: () => void
     closeMobileMenu: () => void

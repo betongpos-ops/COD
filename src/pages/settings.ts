@@ -2,6 +2,7 @@ import Swal from 'sweetalert2'
 import { requireSession, clearSession, navigateTo } from '../lib/auth'
 import { fetchAvailableDates, updateBranchSettings } from '../lib/supabase'
 import { formatDateThai, todayISO } from '../lib/utils'
+import { initPasswordToggles } from '../lib/pwtoggle'
 import type { Session } from '../types'
 
 const session: Session = requireSession('admin')
@@ -45,20 +46,22 @@ async function loadDateStats() {
 async function loadBranchInfo() {
   try {
     const { sb } = await import('../lib/supabase')
-    const { data } = await sb.from('branches').select('name,office_head_name,office_head_title').eq('id', session.branch_id).single()
+    const { data } = await sb.from('branches').select('name,office_head_name,office_head_title,controller_name').eq('id', session.branch_id).single()
     if (data) {
       ;(document.getElementById('s_name') as HTMLInputElement).value = data.name ?? ''
       ;(document.getElementById('s_head_name') as HTMLInputElement).value = data.office_head_name ?? ''
       ;(document.getElementById('s_head_title') as HTMLInputElement).value = data.office_head_title ?? ''
+      ;(document.getElementById('s_controller_name') as HTMLInputElement).value = data.controller_name ?? ''
     }
   } catch { /* use session values */ }
 }
 
 // ── Save branch info ──────────────────────────────────────────────
 window.saveBranchInfo = async function () {
-  const name  = (document.getElementById('s_name')       as HTMLInputElement).value.trim()
-  const hName = (document.getElementById('s_head_name')  as HTMLInputElement).value.trim()
-  const hTit  = (document.getElementById('s_head_title') as HTMLInputElement).value.trim()
+  const name  = (document.getElementById('s_name')        as HTMLInputElement).value.trim()
+  const hName = (document.getElementById('s_head_name')   as HTMLInputElement).value.trim()
+  const hTit  = (document.getElementById('s_head_title')  as HTMLInputElement).value.trim()
+  const ctrl  = (document.getElementById('s_controller_name') as HTMLInputElement).value.trim()
 
   if (!name) { Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อที่ทำการ', 'warning'); return }
 
@@ -69,11 +72,13 @@ window.saveBranchInfo = async function () {
       name:            name || undefined,
       officeHeadName:  hName || undefined,
       officeHeadTitle: hTit  || undefined,
+      controllerName:  ctrl  || undefined,
     })
     // Update session
     session.branch_name       = name
     session.office_head_name  = hName || null
     session.office_head_title = hTit  || null
+    session.controller_name   = ctrl  || null
     const { saveSession } = await import('../lib/auth')
     saveSession(session)
     document.getElementById('branchLabel')!.textContent = `${session.postal_code} — ${session.branch_name}`
@@ -133,3 +138,4 @@ declare global {
 // ── Init ──────────────────────────────────────────────────────────
 loadBranchInfo()
 loadDateStats()
+initPasswordToggles()
