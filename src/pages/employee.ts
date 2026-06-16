@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2'
 import { requireSession, navigateTo, login, saveSession, clearSession } from '../lib/auth'
-import { fetchParcels, uploadImage, updateParcel } from '../lib/supabase'
+import { fetchParcels, uploadImage, updateParcel, fetchBranchControllerName } from '../lib/supabase'
 import { compressImage } from '../lib/compress'
 import { todayISO, platformBadgeHtml, escJs } from '../lib/utils'
 import { fetchOperatorsStats } from '../lib/supabase'
@@ -248,13 +248,16 @@ window.printMyHandover210 = async function () {
     Swal.fire('ไม่มีรายการ', 'ยังไม่มีพัสดุให้ส่งมอบ', 'info'); return
   }
   Swal.fire({ title: 'กำลังเตรียมเอกสาร...', allowOutsideClick: false, didOpen: () => Swal.showLoading() })
-  const logoSrc = await getLogoDataUrl()
+  const [logoSrc, controllerName] = await Promise.all([
+    getLogoDataUrl(),
+    fetchBranchControllerName(session.branch_id),
+  ])
   Swal.close()
   const html = buildHandover210Doc(
     [{ operator: currentOperator, parcels: currentParcels }],
     {
       branchName:     session.branch_name,
-      controllerName: session.controller_name ?? '',
+      controllerName: controllerName ?? session.controller_name ?? '',
       workDate:       currentDate,
       logoSrc,
     }

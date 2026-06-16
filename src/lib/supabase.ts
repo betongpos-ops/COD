@@ -166,6 +166,17 @@ export async function updateBranchSettings(opts: {
   return data
 }
 
+// ── Branch lookup (ดึงค่าสดจาก DB กัน session ค้าง) ────────────────
+export async function fetchBranchControllerName(branchId: string): Promise<string | null> {
+  const { data, error } = await sb
+    .from('branches')
+    .select('controller_name')
+    .eq('id', branchId)
+    .single()
+  if (error) return null
+  return (data?.controller_name as string | null) ?? null
+}
+
 // ── Storage ───────────────────────────────────────────────────────
 export async function uploadImage(
   branchId: string,

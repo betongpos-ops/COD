@@ -1,10 +1,10 @@
 import Swal from 'sweetalert2'
 import * as XLSX from 'xlsx'
-import { requireSession, navigateTo } from '../lib/auth'
+import { requireSession, navigateTo, saveSession } from '../lib/auth'
 import {
   fetchParcels, updateParcel, updateParcelsInList,
   deleteParcel, upsertParcel, uploadParcels,
-  uploadImage
+  uploadImage, fetchBranchControllerName
 } from '../lib/supabase'
 import { compressImage } from '../lib/compress'
 import {
@@ -841,7 +841,15 @@ window.generateUrgentReport = async function () {
 // ── บัญชีส่งมอบภายใน (ป.210) — พิมพ์ทุกคน 1 แผ่น/คน ───────────────
 window.generateHandover210 = async function () {
   if (!allData.length) { Swal.fire('ไม่มีข้อมูล', 'ยังไม่มีพัสดุในวันที่เลือก', 'info'); return }
-  if (!session.controller_name) {
+
+  // ดึงชื่อผู้ควบคุมฯ สดจาก DB (กัน session ค้างจาก login เก่า) แล้ว sync เข้า session
+  const controllerName = (await fetchBranchControllerName(session.branch_id)) ?? ''
+  if (controllerName !== (session.controller_name ?? '')) {
+    session.controller_name = controllerName || null
+    saveSession(session)
+  }
+
+  if (!controllerName) {
     const go = await Swal.fire({
       icon: 'warning', title: 'ยังไม่ได้ตั้งชื่อผู้ควบคุมฯ',
       html: 'ช่อง "ถึง" ในบัญชีจะว่าง<br>ต้องการไปตั้งค่าชื่อผู้ควบคุมฯ ก่อนไหม?',
@@ -859,7 +867,7 @@ window.generateHandover210 = async function () {
   const logoSrc = await getLogoDataUrl()
   const html = buildHandover210Doc(ordered, {
     branchName:     session.branch_name,
-    controllerName: session.controller_name ?? '',
+    controllerName,
     workDate:       currentDate,
     logoSrc,
   })
