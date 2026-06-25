@@ -5,9 +5,12 @@ dist/
 
 # Claude Code settings
 .claude/
+.agents/
+.codex/
 
 # impeccable skill tooling (github harness copy)
 .github/skills/
+.github/hooks/
 
 # Old Google Apps Script files (ระบบเดิม)
 .clasp.json

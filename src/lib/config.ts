@@ -1,5 +1,6 @@
 export const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL  as string
 export const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON as string
+export const QMS_API_URL   = (import.meta.env.VITE_QMS_API_URL as string | undefined) || 'http://localhost:8000'
 
 // Image storage path: {branch_id}/{work_date}/{tracking_no}_{ts}.jpg
 export const STORAGE_BUCKET = 'parcel-images'

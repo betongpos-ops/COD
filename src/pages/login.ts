@@ -1,6 +1,7 @@
 import { sb } from '../lib/supabase'
 import { login, saveSession, getSession, navigateTo } from '../lib/auth'
 import { initPasswordToggles } from '../lib/pwtoggle'
+import { setQmsApiUrlWithSuperAdmin } from '../lib/qms-api-url'
 import type { Branch, Session } from '../types'
 import Swal from 'sweetalert2'
 
@@ -111,6 +112,8 @@ window.submitAdminLogin = async function () {
   navigateTo('admin.html')
 }
 
+window.setQmsApiUrl = setQmsApiUrlWithSuperAdmin
+
 // ── Global declarations ───────────────────────────────────────────
 declare global {
   interface Window {
@@ -120,6 +123,7 @@ declare global {
     backToStep2: () => void
     chooseMode: (mode: 'employee' | 'admin') => void
     submitAdminLogin: () => void
+    setQmsApiUrl: () => void
   }
 }
 

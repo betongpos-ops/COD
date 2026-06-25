@@ -5,9 +5,9 @@
 //
 //  ⚙️ เปลี่ยนรอบประกาศใหม่: แก้ ANN_ID (ขึ้นเลขใหม่) + ANN_EXPIRES
 // ------------------------------------------------------------------
-const ANN_ID = '2026-06-ป210'
-// แสดงถึงสิ้นวันนี้ (เวลาไทย) — ตั้งไว้ 3 วันนับจากวันประกาศ
-const ANN_EXPIRES = new Date('2026-06-18T23:59:59+07:00').getTime()
+const ANN_ID = '2026-06-qms-auto-import'
+// แสดง 7 วันรวมวันที่ประกาศ: 25 มิ.ย. 2569 ถึง 1 ก.ค. 2569 เวลาไทย
+const ANN_EXPIRES = new Date('2026-07-01T23:59:59+07:00').getTime()
 
 type Role = 'admin' | 'employee'
 
@@ -15,37 +15,26 @@ interface Feature { icon: string; color: string; title: string; desc: string }
 
 const COMMON: Feature[] = [
   {
-    icon: 'fa-file-signature', color: '#002169',
-    title: 'บัญชีส่งมอบภายใน (ป.210)',
-    desc: 'พิมพ์ใบส่งมอบพัสดุระหว่างพนักงานกับผู้ควบคุมฯ สรุปแยกตามวันคงค้าง พร้อมช่องลงนาม',
+    icon: 'fa-cloud-download-alt', color: '#002169',
+    title: 'ดึงข้อมูล QMS อัตโนมัติ ผ่าน API',
+    desc: 'กดปุ่ม "ดึง QMS 1-4 วัน" และ "ดึง QMS 5 วัน" ระบบจะดึงข้อมูลอัตโนมัติ',
   },
   {
-    icon: 'fa-eye', color: '#0369a1',
-    title: 'ปุ่มดูรหัสผ่าน',
-    desc: 'กดรูปดวงตา 👁 ในช่องรหัสผ่าน เพื่อดูสิ่งที่พิมพ์ ลดการกรอกผิด',
+    icon: 'fa-file-import', color: '#0369a1',
+    title: 'ยังใช้อัปโหลดไฟล์ได้เหมือนเดิม',
+    desc: 'เมนูอัปโหลดไฟล์ยังคงอยู่ เผื่อกรณี QMS หรือ API ขัดข้อง สามารถใช้วิธีเดิมสำรองได้ทันที',
   },
 ]
 
 const BY_ROLE: Record<Role, Feature[]> = {
   employee: [
     {
-      icon: 'fa-print', color: '#15803d',
-      title: 'พิมพ์ ป.210 ของฉัน',
-      desc: 'หน้ารายการพัสดุ → ปุ่ม "พิมพ์บัญชีส่งมอบ ป.210 ของฉัน" ได้ใบของตัวเองทันที',
+      icon: 'fa-bolt', color: '#15803d',
+      title: 'รายการพร้อมตรวจเร็วขึ้น',
+      desc: 'เมื่อผู้ควบคุมฯ ดึงข้อมูลจาก QMS แล้ว รายการจะเข้าหน้าพนักงานได้เร็วขึ้น ไม่ต้องรอเตรียมไฟล์ Excel ก่อนนำเข้า',
     },
   ],
-  admin: [
-    {
-      icon: 'fa-users', color: '#15803d',
-      title: 'พิมพ์ ป.210 ทุกคนทีเดียว',
-      desc: 'เมนู (☰) → "บัญชีส่งมอบ ป.210" ระบบสร้างให้คนละ 1 แผ่นอัตโนมัติ',
-    },
-    {
-      icon: 'fa-user-tie', color: '#b45309',
-      title: 'ตั้งชื่อผู้ควบคุมฯ',
-      desc: 'ตั้งค่าระบบ → กรอก "ชื่อผู้ควบคุมฯ" จะแสดงเป็นช่อง "ถึง / ผู้รับมอบ" ในใบ ป.210',
-    },
-  ],
+  admin: [],
 }
 
 const STYLE = `
@@ -69,6 +58,9 @@ const STYLE = `
   justify-content: center; color: #fff; font-size: 17px; }
 .ann-ft { font-size: 14.5px; font-weight: 600; color: #111827; line-height: 1.35; }
 .ann-fd { font-size: 12.5px; color: #4b5563; line-height: 1.55; margin-top: 2px; }
+.ann-note { margin: 0 20px 6px; padding: 12px 14px; border-radius: 12px; background: #f8fafc;
+  border: 1px solid #e5e7eb; color: #374151; font-size: 12.5px; line-height: 1.65; }
+.ann-note b { color: #002169; font-weight: 700; }
 .ann-foot { padding: 14px 20px 22px; }
 .ann-ok { width: 100%; background: #002169; color: #fff; border: none; border-radius: 11px; padding: 13px;
   font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s; }
@@ -95,6 +87,9 @@ export function showAnnouncement(role: Role): void {
         <div class="ann-fd">${f.desc}</div>
       </div>
     </div>`).join('')
+  const adminNoteHtml = role === 'admin'
+    ? `<div class="ann-note"><b>หมายเหตุสำหรับ Admin</b><br>สำหรับ Admin "ดึง QMS 1-4 วัน" หรือ "ดึง QMS 5+ วัน" ระบบจะ Login QMS โดยใช้ User และ Password เดียวกับ HRIS หรือ เครื่องธุรการ (user AD) ระบบจะนำเข้ารายการให้โดยอัตโนมัติ</div>`
+    : ''
 
   const style = document.createElement('style')
   style.textContent = STYLE
@@ -107,10 +102,11 @@ export function showAnnouncement(role: Role): void {
       <button class="ann-x" aria-label="ปิด">&times;</button>
       <div class="ann-head">
         <span class="ann-badge"><i class="fas fa-bullhorn"></i> อัปเดตใหม่</span>
-        <h2>มีฟีเจอร์ใหม่ในระบบ COD</h2>
-        <p class="ann-sub">ปรับปรุงให้การส่งมอบและใช้งานสะดวกขึ้น</p>
+        <h2>ดึงข้อมูล QMS ได้อัตโนมัติแล้ว</h2>
+        <p class="ann-sub">ลดขั้นตอนการ Export และ Upload ไฟล์ Excel แบบเดิม</p>
       </div>
       <div class="ann-features">${featHtml}</div>
+      ${adminNoteHtml}
       <div class="ann-foot"><button class="ann-ok"><i class="fas fa-check"></i> รับทราบ</button></div>
     </div>`
 

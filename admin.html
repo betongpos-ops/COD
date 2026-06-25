@@ -41,6 +41,8 @@
         <div class="mgmt-dropdown" id="mgmtDropdown">
           <div class="mgmt-section">
             <div class="mgmt-section-label">อัปโหลดข้อมูล</div>
+            <button class="mgmt-item" onclick="importQmsReturnReminder('1-4 Days');closeMgmtMenu()"><span class="mgmt-icon mi-blue"><i class="fas fa-cloud-download-alt"></i></span>ดึง QMS 1-4 วัน</button>
+            <button class="mgmt-item" onclick="importQmsReturnReminder('5+ Days');closeMgmtMenu()"><span class="mgmt-icon mi-red"><i class="fas fa-cloud-download-alt"></i></span>ดึง QMS 5+ วัน</button>
             <button class="mgmt-item" onclick="triggerUpload('1-4');closeMgmtMenu()"><span class="mgmt-icon mi-green"><i class="fas fa-upload"></i></span>อัปโหลด 1-4 วัน</button>
             <button class="mgmt-item" onclick="triggerUpload('5plus');closeMgmtMenu()"><span class="mgmt-icon mi-amber"><i class="fas fa-upload"></i></span>อัปโหลด 5+ วัน</button>
           </div>
@@ -191,6 +193,8 @@
       <div class="mm-title">จัดการระบบ</div>
 
       <div class="mm-section-label">อัปโหลดข้อมูล</div>
+      <button class="mm-item" onclick="importQmsReturnReminder('1-4 Days');closeMobileMenu()"><div class="mm-icon" style="background:var(--blue-50);color:var(--blue-600);"><i class="fas fa-cloud-download-alt"></i></div><div><span>ดึง QMS 1-4 วัน</span><span class="mm-sub">Login SSO แล้วนำเข้า Return Reminder โดยตรง</span></div></button>
+      <button class="mm-item" onclick="importQmsReturnReminder('5+ Days');closeMobileMenu()"><div class="mm-icon" style="background:var(--red-50);color:var(--red-600);"><i class="fas fa-cloud-download-alt"></i></div><div><span>ดึง QMS 5+ วัน</span><span class="mm-sub">Login SSO แล้วนำเข้า Return Reminder โดยตรง</span></div></button>
       <button class="mm-item" onclick="triggerUpload('1-4');closeMobileMenu()"><div class="mm-icon" style="background:var(--green-50);color:var(--green-600);"><i class="fas fa-upload"></i></div><div><span>อัปโหลด 1-4 วัน</span><span class="mm-sub">นำเข้าไฟล์ Excel จาก QMS</span></div></button>
       <button class="mm-item" onclick="triggerUpload('5plus');closeMobileMenu()"><div class="mm-icon" style="background:var(--amber-50);color:var(--amber-600);"><i class="fas fa-upload"></i></div><div><span>อัปโหลด 5+ วัน</span><span class="mm-sub">นำเข้าไฟล์ Excel จาก QMS</span></div></button>
 

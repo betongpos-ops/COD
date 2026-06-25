@@ -13,9 +13,11 @@ import {
   normalizeTracking, escJs
 } from '../lib/utils'
 import { fetchAvailableDates } from '../lib/supabase'
+import { getQmsOfficeId } from '../lib/qms-offices'
+import { getQmsApiUrl, normalizeQmsApiUrl, QMS_API_URL_STORAGE_KEY } from '../lib/qms-api-url'
 import { buildHandover210Doc, openHandover210, type OperatorGroup } from '../lib/handover210'
 import { showAnnouncement } from '../lib/announcement'
-import type { Parcel, Session } from '../types'
+import type { Parcel, Session, QmsRow } from '../types'
 import { getParcelStatus } from '../types'
 
 // ── Session ───────────────────────────────────────────────────────
@@ -627,6 +629,231 @@ window.deleteAllToday = async function () {
 // ── Upload Excel ──────────────────────────────────────────────────
 window.triggerUpload = (cat: string) => document.getElementById(cat === '1-4' ? 'fileUpload14' : 'fileUpload5p')!.click()
 
+function qmsDebugId(): string {
+  return `cod-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function htmlEscape(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function qmsDebugHtml(detail: any, fallback: unknown): string {
+  const info = typeof detail === 'object' && detail ? detail : {}
+  const steps = Array.isArray(info.steps) ? info.steps : []
+  const stepRows = steps.map((s: any) => `
+    <div style="display:flex;gap:8px;border-bottom:1px solid #eee;padding:6px 0;text-align:left;">
+      <span style="width:22px;color:${s.ok === false ? '#dc2626' : '#15803d'};">${s.ok === false ? 'x' : '✓'}</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;">${htmlEscape(s.step)} <span style="font-weight:400;color:#6b7280;">${htmlEscape(s.elapsed_ms)} ms</span></div>
+        <div style="font-size:12px;color:#6b7280;word-break:break-word;">${htmlEscape(JSON.stringify({ ...s, step: undefined, ok: undefined, elapsed_ms: undefined }))}</div>
+      </div>
+    </div>
+  `).join('')
+  const page = info.page || {}
+  return `
+    <div style="text-align:left;font-size:14px;line-height:1.45;">
+      <div><b>Message:</b> ${htmlEscape(info.message || fallback)}</div>
+      <div><b>Request ID:</b> <code>${htmlEscape(info.request_id || '-')}</code></div>
+      <div><b>Stage:</b> <code>${htmlEscape(info.stage || '-')}</code></div>
+      <div><b>Debug dir:</b> <code>${htmlEscape(info.debug_dir || '-')}</code></div>
+      <div><b>Detail HTML:</b> <code>${htmlEscape(info.debug_detail_html || '-')}</code></div>
+      <div><b>Debug JSON:</b> <code>${htmlEscape(info.debug_json || '-')}</code></div>
+      <hr>
+      <div><b>Page title:</b> ${htmlEscape(page.title || '-')}</div>
+      <div><b>Final URL:</b> <span style="word-break:break-all;">${htmlEscape(page.url || info.source_url || '-')}</span></div>
+      <div><b>tableMail:</b> ${page.has_tableMail ? 'พบ' : 'ไม่พบ'} | <b>Login marker:</b> ${page.has_login_marker ? 'พบ' : 'ไม่พบ'} | <b>Akamai:</b> ${page.has_akamai_marker ? 'พบ' : 'ไม่พบ'}</div>
+      <div style="margin-top:8px;"><b>Steps</b></div>
+      ${stepRows || '<div style="color:#6b7280;">ไม่มี step log</div>'}
+    </div>
+  `
+}
+
+window.importQmsReturnReminder = async function (category: '1-4 Days' | '5+ Days' = '1-4 Days') {
+  const qmsChoice = category === '5+ Days' ? 4 : 5
+  const today = todayISO()
+  const catLabel = category === '5+ Days' ? 'พัสดุ 5 วันขึ้นไป' : 'พัสดุ 1-4 วัน'
+  const qmsOfficeId = getQmsOfficeId(session.postal_code)
+  if (!qmsOfficeId) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'ยังไม่มี QMS ID ของที่ทำการนี้',
+      html: `ไม่พบ mapping สำหรับ office_code <b>${htmlEscape(session.postal_code)}</b><br>กรุณาเพิ่ม QMS id ของสาขานี้ก่อนดึงข้อมูล`,
+    })
+    return
+  }
+  const hasSameCategory = currentDate === today && allData.some(d => d.aging_category === category)
+
+  if (hasSameCategory) {
+    const existCount = allData.filter(d => d.aging_category === category).length
+    const ok = await Swal.fire({
+      icon: 'warning',
+      title: `มีข้อมูล "${catLabel}" วันนี้อยู่แล้ว`,
+      html: `พบ <b>${existCount} รายการ</b> (${catLabel})<br>
+             การดึงจาก QMS จะ<b>แทนที่เฉพาะหมวดนี้</b><br>
+             ข้อมูล${category === '1-4 Days' ? ' 5 วันขึ้นไป' : ' 1-4 วัน'}จะ<b>ไม่ถูกแตะต้อง</b><br><br>
+             ต้องการดำเนินการต่อหรือไม่?`,
+      showCancelButton: true,
+      confirmButtonText: 'ดึงข้อมูลจาก QMS',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#002169',
+    })
+    if (!ok.isConfirmed) return
+  }
+
+  const savedUser = localStorage.getItem('qms_username') ?? ''
+  const savedPass = localStorage.getItem('qms_password') ?? ''
+  const rememberPass = localStorage.getItem('qms_remember_password') === '1'
+  const creds = await Swal.fire({
+    title: 'เข้าสู่ระบบ QMS',
+    html: `
+      <div style="text-align:left">
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Username</label>
+        <input id="qmsUser" class="swal2-input" style="margin:0 0 12px;width:100%;" value="${savedUser}" autocomplete="username">
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Password</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="qmsPass" class="swal2-input" style="margin:0;flex:1;width:auto;" type="password" value="${htmlEscape(savedPass)}" autocomplete="current-password">
+          <button id="qmsTogglePass" type="button" style="height:48px;padding:0 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-weight:600;">ดู</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#4b5563;">
+          <input id="qmsRememberPass" type="checkbox" ${rememberPass ? 'checked' : ''}>
+          จดจำรหัสผ่านในเครื่องนี้
+        </label>
+        <div style="margin-top:6px;font-size:11px;color:#9ca3af;">แนะนำใช้เฉพาะเครื่องส่วนตัวเท่านั้น</div>
+      </div>`,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'ดึงข้อมูล',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#002169',
+    didOpen: () => {
+      const pass = document.getElementById('qmsPass') as HTMLInputElement | null
+      const btn = document.getElementById('qmsTogglePass') as HTMLButtonElement | null
+      btn?.addEventListener('click', () => {
+        if (!pass) return
+        const show = pass.type === 'password'
+        pass.type = show ? 'text' : 'password'
+        btn.textContent = show ? 'ซ่อน' : 'ดู'
+      })
+    },
+    preConfirm: () => {
+      const username = (document.getElementById('qmsUser') as HTMLInputElement).value.trim()
+      const password = (document.getElementById('qmsPass') as HTMLInputElement).value
+      const remember = (document.getElementById('qmsRememberPass') as HTMLInputElement).checked
+      if (!username || !password) {
+        Swal.showValidationMessage('กรุณากรอก Username และ Password')
+        return false
+      }
+      return { username, password, remember }
+    },
+  })
+  if (!creds.isConfirmed || !creds.value) return
+  localStorage.setItem('qms_username', creds.value.username)
+  if (creds.value.remember) {
+    localStorage.setItem('qms_password', creds.value.password)
+    localStorage.setItem('qms_remember_password', '1')
+  } else {
+    localStorage.removeItem('qms_password')
+    localStorage.removeItem('qms_remember_password')
+  }
+  const debugRequestId = qmsDebugId()
+  console.group(`[QMS Return Reminder] ${debugRequestId}`)
+  const apiBase = normalizeQmsApiUrl(getQmsApiUrl())
+  const apiBaseSource = localStorage.getItem(QMS_API_URL_STORAGE_KEY) ? 'localStorage' : 'env/default'
+  const isLocalApi = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(apiBase)
+  const apiStatusText = isLocalApi ? 'API ยังเป็น Localhost' : 'API ถูกต้อง'
+  const apiStatusColor = isLocalApi ? '#dc2626' : '#15803d'
+  console.log('request', {
+    apiBase,
+    apiBaseSource,
+    category,
+    qmsChoice,
+    office_id: qmsOfficeId,
+    office_code: session.postal_code,
+    office_name: session.branch_name,
+  })
+
+  Swal.fire({
+    title: 'กำลังดึงข้อมูลจาก QMS...',
+    html: `
+      <div style="line-height:1.55;">
+        กำลัง Login SSO และอ่าน Return Reminder (${catLabel})<br>
+        <span style="font-size:12px;color:#6b7280;">API source: ${htmlEscape(apiBaseSource)}</span><br>
+        <b style="display:inline-block;margin-top:6px;color:${apiStatusColor};">${htmlEscape(apiStatusText)}</b>
+      </div>`,
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  })
+  try {
+    const res = await fetch(`${apiBase}/api/return-reminder`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: JSON.stringify({
+        username: creds.value.username,
+        password: creds.value.password,
+        category,
+        choice: qmsChoice,
+        office_id: qmsOfficeId,
+        office_code: session.postal_code,
+        office_name: session.branch_name,
+        debug_request_id: debugRequestId,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    console.log('response', { status: res.status, ok: res.ok, data })
+    if (!res.ok || data.status !== 'success') {
+      const err: any = new Error(typeof data.detail === 'string' ? data.detail : (data.detail?.message || data.message || `QMS API error ${res.status}`))
+      err.detail = data.detail || data
+      err.httpStatus = res.status
+      console.error('QMS API failed', err)
+      await Swal.fire({
+        icon: 'error',
+        title: 'QMS import failed',
+        html: qmsDebugHtml(err.detail, err.message),
+        width: 900,
+      })
+      console.groupEnd()
+      return
+    }
+
+    const dedup: Record<string, QmsRow> = {}
+    ;((data.cod_rows ?? []) as QmsRow[]).forEach(row => {
+      const tn = normalizeTracking(row.tracking_no)
+      if (!tn) return
+      dedup[tn] = { ...row, tracking_no: tn, aging_category: category }
+    })
+    const final = Object.values(dedup)
+    if (!final.length) {
+      const count = await uploadParcels(session.branch_id, today, [], category)
+      currentDate = today
+      await loadDateBar()
+      await loadData()
+      Swal.fire({
+        icon: 'info',
+        title: 'QMS ไม่มีรายการในหมวดนี้',
+        html: `ไม่พบรายการจาก QMS (${catLabel})<br>ซิงก์ข้อมูลหมวดนี้แล้ว: <b>${count}</b> รายการ`,
+      })
+      console.groupEnd()
+      return
+    }
+
+    const count = await uploadParcels(session.branch_id, today, final, category)
+    currentDate = today
+    await loadDateBar()
+    Swal.fire({ icon: 'success', title: 'ดึงข้อมูลสำเร็จ!', html: `นำเข้า <b>${count}</b> รายการ จาก QMS (${catLabel})` })
+    await loadData()
+  } catch (err) {
+    Swal.fire('ดึงข้อมูลไม่สำเร็จ', String(err), 'error')
+  }
+}
+
 window.processUpload = async function (category: '1-4 Days' | '5+ Days', input: HTMLInputElement) {
   const file = input.files?.[0]; if (!file) return
   const today = todayISO()
@@ -949,6 +1176,7 @@ declare global {
     deleteItem: (t: string) => void
     deleteAllToday: () => void
     triggerUpload: (cat: string) => void
+    importQmsReturnReminder: (category?: '1-4 Days' | '5+ Days') => void
     processUpload: (cat: '1-4 Days' | '5+ Days', input: HTMLInputElement) => void
     exportExcel: () => void
     generateReport: () => void

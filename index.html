@@ -29,7 +29,10 @@
           <i class="fas fa-search"></i>
           <input type="text" id="branchSearch" placeholder="ค้นหา ปณ. หรือรหัสไปรษณีย์..." oninput="filterBranches()">
         </div>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <div class="login-shortcuts">
+          <button type="button" class="register-shortcut qms-api-shortcut" onclick="setQmsApiUrl()">
+            <i class="fas fa-link"></i> ตั้งค่า QMS API
+          </button>
           <a href="/register.html" class="register-shortcut">
             <i class="fas fa-plus-circle"></i> ลงทะเบียน ปณ. ใหม่
           </a>
